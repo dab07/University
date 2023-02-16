@@ -1,12 +1,8 @@
 import re
-import pandas as pd
-import re
 import numpy as np
 import pandas as pd
-import transformers as transformers
-from matplotlib import pyplot as plt
 import torch.nn.functional as F
-
+from matplotlib import pyplot as plt
 
 data_complaint = pd.read_csv('/Users/hs/PycharmProjects/complaint1700.csv')
 data_complaint['label'] = 0
@@ -29,9 +25,9 @@ test_data = test_data[['id', 'tweet']]
 
 import torch
 
-import nltk
+# import nltk
 from nltk.corpus import stopwords
-
+from nltk.stem import WordNetLemmatizer
 
 # nltk.download("stopwords")
 
@@ -47,7 +43,6 @@ def text_preprocessing(s):
                   if word not in stopwords.words('english')
                   or word in ['not', 'can']])
     s = re.sub(r'\s+', ' ', s).strip()
-
     return s
 
 
@@ -87,20 +82,21 @@ def evaluate_roc(probs, y_true):
     accuracy = accuracy_score(y_true, y_pred)
     print(f'Accuracy: {accuracy * 100:.2f}%')
 
-    # plt.title('Receiver Operating Characteristic')
-    # plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
-    # plt.legend(loc='lower right')
-    # plt.plot([0, 1], [0, 1], 'r--')
-    # plt.xlim([0, 1])
-    # plt.ylim([0, 1])
-    # plt.ylabel('True Positive Rate')
-    # plt.xlabel('False Positive Rate')
-    # plt.show()
+    plt.title('Receiver Operating Characteristic')
+    plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
+    plt.legend(loc='lower right')
+    plt.plot([0, 1], [0, 1], 'r--')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.ylabel('True Positive Rate')
+    plt.xlabel('False Positive Rate')
+    plt.show()
 
 
 nb_model = MultinomialNB(alpha=1.8)
 nb_model.fit(X_train_tfidf, y_train)
 probs = nb_model.predict_proba(X_val_tfidf)
+
 
 evaluate_roc(probs, y_val)
 
@@ -205,7 +201,7 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 def initialize_model(epochs=4):
 
     bert_classifier = BertClassifier(freeze_bert=False)
-
+    lemmatizer = WordNetLemmatizer()
     optimizer = AdamW(bert_classifier.parameters(),
                       lr=5e-5,
                       eps=1e-8
@@ -214,9 +210,9 @@ def initialize_model(epochs=4):
     total_steps = len(train_dataloader) * epochs
 
     scheduler = get_linear_schedule_with_warmup(optimizer,
-                                                num_warmup_steps=0, # Default value
+                                                num_warmup_steps=0,
                                                 num_training_steps=total_steps)
-    return bert_classifier, optimizer, scheduler
+    return bert_classifier, optimizer, scheduler, lemmatizer
 
 
 import random
@@ -233,7 +229,7 @@ def set_seed(seed_value=42):
 
 
 def train(model, train_dataloader, val_dataloader=None, epochs=4, evaluation=False):
-    print("Start training...\n")
+    print("...Start training...\n")
     for epoch_i in range(epochs):
         print(f"{'Epoch':^7} | {'Batch':^7} | {'Train Loss':^12} | {'Val Loss':^10} | {'Val Acc':^9} | {'Elapsed':^9}")
         print("-" * 70)
@@ -313,6 +309,7 @@ def evaluate(model, val_dataloader):
 
     return val_loss, val_accuracy
 
+
 set_seed(42)
 bert_classifier, optimizer, scheduler = initialize_model(epochs=2)
 train(bert_classifier, train_dataloader, val_dataloader, epochs=2, evaluation=True)
@@ -333,15 +330,18 @@ def bert_predict(model, test_dataloader):
 
     return probs
 
+
 probs = bert_predict(bert_classifier, val_dataloader)
 evaluate_roc(probs, y_val)
+
 
 full_train_data = torch.utils.data.ConcatDataset([train_data, val_data])
 full_train_sampler = RandomSampler(full_train_data)
 full_train_dataloader = DataLoader(full_train_data, sampler=full_train_sampler, batch_size=32)
 
+
 set_seed(42)
-bert_classifier, optimizer, scheduler = initialize_model(epochs=2)
+bert_classifier, optimizer, scheduler, lemm = initialize_model(epochs=2)
 train(bert_classifier, full_train_dataloader, epochs=2)
 
 print('...Tokenizing data...')
@@ -351,13 +351,11 @@ test_dataset = TensorDataset(test_inputs, test_masks)
 test_sampler = SequentialSampler(test_dataset)
 test_dataloader = DataLoader(test_dataset, sampler=test_sampler, batch_size=32)
 
-
 probs = bert_predict(bert_classifier, test_dataloader)
+threshold = 0.9
 
-threshold = 0.992
 preds = np.where(probs[:, 1] > threshold, 1, 0)
 
 print("Number of tweets predicted non-negative: ", preds.sum())
-
-output = test_data[preds==1]
+output = test_data[preds == 1]
 list(output.sample(20).tweet)

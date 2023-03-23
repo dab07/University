@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/TwitterProject.iml" filepath="$PROJECT_DIR$/.idea/TwitterProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PyProjects.iml" filepath="$PROJECT_DIR$/.idea/PyProjects.iml" />
     </modules>
   </component>
 </project>

@@ -5,14 +5,12 @@ import numpy as np
 data = pd.read_csv("/Users/hs/Downloads/id3.csv")
 features = [feat for feat in data]
 features.remove("Answer")
-
 class Node:
     def __init__(self):
         self.children = []
         self.value = ""
         self.isLeaf = False
         self.pred = ""
-
 
 def entropy(examples):
     pos = 0.0
@@ -29,7 +27,6 @@ def entropy(examples):
         n = neg / (pos + neg)
         return -(p * math.log(p, 2) + n * math.log(n, 2))
 
-
 def info_gain(examples, attr):
     uniq = np.unique(examples[attr])
     # print ("\n",uniq)
@@ -43,10 +40,8 @@ def info_gain(examples, attr):
         # print ("\n",gain)
     return gain
 
-
 def ID3(examples, attrs):
     root = Node()
-
     max_gain = 0
     max_feat = ""
     for feature in attrs:
@@ -56,13 +51,9 @@ def ID3(examples, attrs):
             max_gain = gain
             max_feat = feature
     root.value = max_feat
-    # print ("\nMax feature attr",max_feat)
     uniq = np.unique(examples[max_feat])
-    # print ("\n",uniq)
     for u in uniq:
-        # print ("\n",u)
         subdata = examples[examples[max_feat] == u]
-        # print ("\n",subdata)
         if entropy(subdata) == 0.0:
             newNode = Node()
             newNode.isLeaf = True
@@ -77,9 +68,7 @@ def ID3(examples, attrs):
             child = ID3(subdata, new_attrs)
             dummyNode.children.append(child)
             root.children.append(dummyNode)
-
     return root
-
 
 def printTree(root: Node, depth=0):
     for i in range(depth):
@@ -91,7 +80,6 @@ def printTree(root: Node, depth=0):
     for child in root.children:
         printTree(child, depth + 1)
 
-
 def classify(root: Node, new):
     for child in root.children:
         if child.value == new[root.value]:
@@ -101,10 +89,8 @@ def classify(root: Node, new):
             else:
                 classify(child.children[0], new)
 
-
 root = ID3(data, features)
 print("Decision Tree is:")
 printTree(root)
-
 new = {"Outlook": "sunny", "Temperature": "hot", "Humidity": "normal", "Wind": "strong"}
 classify(root, new)

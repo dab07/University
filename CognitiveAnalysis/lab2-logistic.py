@@ -2,7 +2,7 @@ import classifier as classifier
 import pandas as pd
 
 dataset = pd.read_csv("/Users/hs/Downloads/diabetes2.csv")
-# print(dataset.head())
+print(dataset.head())
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
@@ -30,9 +30,7 @@ from sklearn.metrics import confusion_matrix
 confusion_matrix = confusion_matrix(y_test, y_pred)
 print(confusion_matrix)
 
-# print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(classifier.score(X_test, y_test)))
-print('Accuracy of logistic regression classifier on test set: {:.2f}'.format(classifier))
-
+print('Accuracy of logistic regression classifier on test set:' , classifier.score(X_test, y_test))
 
 from sklearn.metrics import classification_report
 print(classification_report(y_test, y_pred))

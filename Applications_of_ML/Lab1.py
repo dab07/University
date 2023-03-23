@@ -45,4 +45,4 @@ def Find_S1(att, tar):
 
     return hypo
 print(Find_S(attribute, target))
-print(Find_S1(attribute_1, target_1))
+# print(Find_S1(attribute_1, target_1))

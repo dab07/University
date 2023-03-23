@@ -24,7 +24,6 @@ for k, input_vector in enumerate(attribute):
                 general_hypo[i][i] = ['?']
 
 indices = [i for i, val in enumerate(general_hypo) if val == ['?', '?', '?', '?', '?', '?']]
-print
 for i in indices:
     general_hypo.remove(['?', '?', '?', '?', '?', '?'])
 

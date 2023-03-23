@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import xgboost
 
 df = pd.read_csv("/Users/hs/Downloads/User_Data.csv")
 # df = pd.read_csv("/Users/hs/Downloads/sensor-fault-detection.csv")

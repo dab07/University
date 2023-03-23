@@ -1,7 +1,6 @@
 import tweepy
 import requests
 
-
 bearer_token = "AAAAAAAAAAAAAAAAAAAAAOIqcgEAAAAA0Hng3Wn9CWjR9mqZfF%2Ff4Ee1LgQ%3Deu8UStPJXQv5VdlyESSNkekDFAUipmTn7fgXhWQjOhgZXcwRTG";
 consumer_key = "2hzhDpiN1p7l58BurF0D9K0qx"
 consumer_secret = "BKw7zsx9XKeVKzC6yFBTAeJsfrldFpe832xGUnq4dAOQBXabH0"
@@ -17,7 +16,9 @@ client = tweepy.Client( bearer_token=bearer_token,
                         return_type = requests.Response,
                         wait_on_rate_limit=True)
 
+
 query = 'from:Cobratate -is:retweet'
+
 
 tweets = client.search_recent_tweets(query=query,
                                     tweet_fields=['author_id', 'created_at'],

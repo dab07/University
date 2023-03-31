@@ -26,3 +26,5 @@ print("\n Accuracy of the classifer is", metrics.accuracy_score(y_test,predicted
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, predicted)
 print("Confusion Matrix: \n" , cm)
+
+print("")

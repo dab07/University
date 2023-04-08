@@ -39,7 +39,7 @@ def plot_predictions(X, y, tau, nval):
     preds = np.array(preds).reshape(nval, 1)
 
     plt.plot(X, y, 'b.')
-    plt.plot(X_test, preds, 'r.')  # Predictions in red color.
+    plt.plot(X_test, preds, 'r.')
     plt.show()
 
 

@@ -12,7 +12,7 @@ y = column_or_1d(y, warn=True)
 X_train, X_test, y_train,y_test = train_test_split(X, y, train_size=0.7, random_state=0)
 
 from sklearn.svm import SVC
-classifier = SVC(kernel='rbf', random_state=1) //degree = 5,  degree = 15
+classifier = SVC(kernel='rbf', random_state=1)
 classifier.fit(X_train, y_train)
 
 Y_pred = classifier.predict(X_test)

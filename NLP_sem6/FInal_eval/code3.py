@@ -17,13 +17,16 @@ word_freq = {k: v for k, v in sorted(myDict.items(),reverse=True, key=lambda ite
 print("_________________Frequency of Words in the text file in sorted order_________________")
 a = 0
 b = 0
-length = len(myDict) / 7
+length = len(myDict) / 10
 for i in range(1, int(length)):
-    b = b + 7
+    b = b + 10
+    if (a == 0):
+        print("\t\t\t\n_________________Top 10 most frequent word_________________")
+        print(list(word_freq.items())[a:b])
+        print("\n")
     print(list(word_freq.items())[a:b])
     a = b + 1
 
-# Displaying Graph os word Cloud
 plt.imshow(wordcloud, interpolation='bilInear')
 plt.hist(myDict)
 plt.axis('on')

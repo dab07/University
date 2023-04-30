@@ -1,138 +1,93 @@
-import pandas as pd
 import numpy as np
-import operator
+import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-data = pd.read_csv('/Users/hs/Downloads/archive (7)/Iris.csv')
-# print(data)
+df = pd.read_csv("/Users/hs/UNI_Material/Datasets/Iris.csv")
+feature_columns = ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm','PetalWidthCm']
+X = df[feature_columns].values
+y = df['Species'].values
 
-indices = np.random.permutation(data.shape[0])
-div = int(0.75 * len(indices))
-development_id, test_id = indices[:div], indices[div:]
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+y = le.fit_transform(y)
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
 
-development_set, test_set = data.loc[development_id,:], data.loc[test_id,:]
-print("Development Set:\n", development_set, "\n\nTest Set:\n", test_set)
+from pandas.plotting import parallel_coordinates
+plt.figure(figsize=(15,10))
+parallel_coordinates(df.drop("Id", axis=1), "Species")
+plt.title('Parallel Coordinates Plot', fontsize=20, fontweight='bold')
+plt.xlabel('Features', fontsize=15)
+plt.ylabel('Features values', fontsize=15)
+plt.legend(loc=1, prop={'size': 15}, frameon=True,shadow=True, facecolor="white", edgecolor="black")
+plt.show()
 
-mean_development_set = development_set.mean()
-mean_test_set = test_set.mean()
-std_development_set = development_set.std()
-std_test_set = test_set.std()
-test_class = list(test_set.iloc[:,-1])
-dev_class = list(development_set.iloc[:,-1])
+from pandas.plotting import andrews_curves
+plt.figure(figsize=(15,10))
+andrews_curves(df.drop("Id", axis=1), "Species")
+plt.title('Andrews Curves Plot', fontsize=20, fontweight='bold')
+plt.legend(loc=1, prop={'size': 15}, frameon=True,shadow=True, facecolor="white", edgecolor="black")
+plt.show()
 
-def euclideanDistance(data_1, data_2, data_len):
-    dist = 0
-    for i in range(data_len):
-        dist = dist + np.square(data_1[i] - data_2[i])
-    return np.sqrt(dist)
+plt.figure()
+sns.pairplot(df.drop("Id", axis=1), hue = "Species", size=3, markers=["o", "s", "D"])
+plt.show()
 
-def normalizedEuclideanDistance(data_1, data_2, data_len, data_mean, data_std):
-    n_dist = 0
-    for i in range(data_len):
-        n_dist = n_dist + (np.square(((data_1[i] - data_mean[i])/data_std[i]) - ((data_2[i] - data_mean[i])/data_std[i])))
-    return np.sqrt(n_dist)
+plt.figure()
+df.drop("Id", axis=1).boxplot(by="Species", figsize=(15, 10))
+plt.show()
 
+from mpl_toolkits.mplot3d import Axes3D
+fig = plt.figure(1, figsize=(20, 15))
+ax = Axes3D(fig, elev=48, azim=134)
+ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=y,
+           cmap=plt.cm.Set1, edgecolor='k', s = X[:, 3]*50)
 
-def cosineSimilarity(data_1, data_2):
-    dot = np.dot(data_1, data_2[:-1])
-    norm_data_1 = np.linalg.norm(data_1)
-    norm_data_2 = np.linalg.norm(data_2[:-1])
-    cos = dot / (norm_data_1 * norm_data_2)
-    return (1-cos)
+for name, label in [('Virginica', 0), ('Setosa', 1), ('Versicolour', 2)]:
+    ax.text3D(X[y == label, 0].mean(),
+              X[y == label, 1].mean(),
+              X[y == label, 2].mean(), name,
+              horizontalalignment='center',
+              bbox=dict(alpha=.5, edgecolor='w', facecolor='w'),size=25)
 
+ax.set_title("3D visualization", fontsize=40)
+ax.set_xlabel("Sepal Length [cm]", fontsize=25)
+ax.w_xaxis.set_ticklabels([])
+ax.set_ylabel("Sepal Width [cm]", fontsize=25)
+ax.w_yaxis.set_ticklabels([])
+ax.set_zlabel("Petal Length [cm]", fontsize=25)
+ax.w_zaxis.set_ticklabels([])
+plt.show()
 
-def knn(dataset, testInstance, k, dist_method, dataset_mean, dataset_std):
-    distances = {}
-    length = testInstance.shape[1]
-    if dist_method == 'euclidean':
-        for x in range(len(dataset)):
-            dist_up = euclideanDistance(testInstance, dataset.iloc[x], length)
-            distances[x] = dist_up[0]
-    elif dist_method == 'normalized_euclidean':
-        for x in range(len(dataset)):
-            dist_up = normalizedEuclideanDistance(testInstance, dataset.iloc[x], length, dataset_mean, dataset_std)
-            distances[x] = dist_up[0]
-    elif dist_method == 'cosine':
-        for x in range(len(dataset)):
-            dist_up = cosineSimilarity(testInstance, dataset.iloc[x])
-            distances[x] = dist_up[0]
-    sort_distances = sorted(distances.items(), key=operator.itemgetter(1))
-    neighbors = []
-    for x in range(k):
-        neighbors.append(sort_distances[x][0])
-    counts = {"Iris-setosa" : 0, "Iris-versicolor" : 0, "Iris-virginica" : 0}
-    # Computing the most frequent class
-    for x in range(len(neighbors)):
-        response = dataset.iloc[neighbors[x]][-1]
-        if response in counts:
-            counts[response] += 1
-        else:
-            counts[response] = 1
-    sort_counts = sorted(counts.items(), key=operator.itemgetter(1), reverse=True)
-    return(sort_counts[0][0])
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.model_selection import cross_val_score
 
-row_list = []
-for index, rows in development_set.iterrows():
-    my_list =[rows.SepalLengthCm, rows.SepalWidthCm, rows.PetalLengthCm, rows.PetalWidthCm]
-    row_list.append([my_list])
-k_n = [1, 3, 5, 7]
-distance_methods = ['euclidean', 'normalized_euclidean', 'cosine']
-obs_k = {}
-for dist_method in distance_methods:
-    development_set_obs_k = {}
-    for k in k_n:
-        development_set_obs = []
-        for i in range(len(row_list)):
-            development_set_obs.append(knn(development_set, pd.DataFrame(row_list[i]), k, dist_method, mean_development_set, std_development_set))
-        development_set_obs_k[k] = development_set_obs
-    obs_k[dist_method] = development_set_obs_k
-print(obs_k)
+classifier = KNeighborsClassifier(n_neighbors=3)
+classifier.fit(X_train, y_train)
+y_pred = classifier.predict(X_test)
+cm = confusion_matrix(y_test, y_pred)
+print('Confusion Matrix\n', cm)
+accuracy = accuracy_score(y_test, y_pred)*100
+print('Accuracy of our model is equal ' + str(round(accuracy, 2)) + ' %.')
 
-accuracy = {}
-for key in obs_k.keys():
-    accuracy[key] = {}
-    for k_value in obs_k[key].keys():
-        count = 0
-        for i,j in zip(dev_class, obs_k[key][k_value]):
-            if i == j:
-                count = count + 1
-            else:
-                pass
-        accuracy[key][k_value] = count/(len(dev_class))
+# Using cross-validation for parameter tuning
+k_list = list(range(1,50,2))
+# creating list of cv scores
+cv_scores = []
+for k in k_list:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    scores = cross_val_score(knn, X_train, y_train, cv=10, scoring='accuracy')
+    cv_scores.append(scores.mean())
+MSE = [1 - x for x in cv_scores]
 
-df_res = pd.DataFrame({'k': k_n})
-for key in accuracy.keys():
-    value = list(accuracy[key].values())
-    df_res[key] = value
-print(df_res)
+plt.figure()
+plt.figure(figsize=(15,10))
+plt.title('The optimal number of neighbors', fontsize=20, fontweight='bold')
+plt.xlabel('Number of Neighbors K', fontsize=15)
+plt.ylabel('Misclassification Error', fontsize=15)
+sns.set_style("whitegrid")
+plt.plot(k_list, MSE)
 
-draw = df_res.plot(x='k', y=['euclidean', 'normalized_euclidean', 'cosine'], kind="bar", colormap='YlGnBu')
-draw.set(ylabel='Accuracy')
-
-column_val = [c for c in df_res.columns if not c.startswith('k')]
-col_max = df_res[column_val].max().idxmax(1)
-best_dist_method = col_max
-row_max = df_res[col_max].argmax()
-best_k = int(df_res.iloc[row_max]['k'])
-if df_res.isnull().values.any():
-    print('\n\n\nBest k value is\033[1m', best_k, '\033[0mand best distance metric is\033[1m', best_dist_method, '\033[0m. Ignoring k=1 if the value of accuracy for k=1 is 100%, since this mostly implies overfitting')
-else:
-    print('\n\n\nBest k value is\033[1m', best_k, '\033[0mand best distance metric is\033[1m', best_dist_method, '\033[0m.')
-
-row_list_test = []
-for index, rows in test_set.iterrows():
-    my_list =[rows.SepalLengthCm, rows.SepalWidthCm, rows.PetalLengthCm, rows.PetalWidthCm]
-    row_list_test.append([my_list])
-test_set_obs = []
-for i in range(len(row_list_test)):
-    test_set_obs.append(knn(test_set, pd.DataFrame(row_list_test[i]), best_k, best_dist_method, mean_test_set, std_test_set))
-print(test_set_obs)
-
-count = 0
-for i,j in zip(test_class, test_set_obs):
-    if i == j:
-        count = count + 1
-    else:
-        pass
-accuracy_test = count/(len(test_class))
-print('Final Accuracy of the Test dataset is ', accuracy_test)
+plt.show()

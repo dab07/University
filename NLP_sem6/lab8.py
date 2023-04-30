@@ -25,4 +25,3 @@ print(bigram_pos)
 sentence = nltk.sent_tokenize(textfile)
 for sent in sentence:
 	 print(nltk.pos_tag(nltk.word_tokenize(sent)))
-

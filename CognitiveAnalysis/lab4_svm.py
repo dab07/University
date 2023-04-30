@@ -4,7 +4,7 @@ import pandas as pd
 
 # Importing the datasets
 
-df = pd.read_csv('/Users/hs/Downloads/Social_Network_Ads.csv)
+df = pd.read_csv('/Users/hs/Downloads/Social_Network_Ads.csv')
 X = df.iloc[:, [2, 3]].values
 Y = df.iloc[:, 4].values
 
@@ -34,7 +34,9 @@ Y_Pred = classifier.predict(X_Test)
 
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(Y_Test, Y_Pred)
-
+print("Confusion Matrix", cm)
+accuracy = float(cm.diagonal().sum())/len(Y_Test)
+print("\nAccuracy: ", accuracy)
 # Visualising the Training set results
 
 from matplotlib.colors import ListedColormap

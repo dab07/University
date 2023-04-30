@@ -27,9 +27,11 @@ y_pred = classifier.predict(x_test)
 from sklearn import metrics
 print("Accuracy: ", metrics.accuracy_score(y_test, y_pred))
 
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, recall_score, precision_score
 cm = confusion_matrix(y_test, y_pred)
 print("Confusion Matrix: \n" , cm)
+print("Recal: ", recall_score(y_test, y_pred))
+print("Precision: ", precision_score(y_test, y_pred))
 
 from matplotlib.colors import ListedColormap
 x_set, y_set = x_train, y_train

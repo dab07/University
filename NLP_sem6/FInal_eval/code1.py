@@ -12,7 +12,6 @@ from nltk import ngrams
 from nltk.stem.porter import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 from gensim import corpora, models
 
 df = pd.read_csv("/Users/hs/UNI_Material/Datasets/IMDB Dataset.csv")
